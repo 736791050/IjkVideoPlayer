@@ -31,9 +31,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile project(':ijkplayer-java')
-    compile project(':ijkplayer-armv7a')
     compile project(':ijkplayer-exo')
-//    implementation project(':ijkplayer-java')
-//    implementation project(':ijkplayer-armv7a')
-//    implementation project(':ijkplayer-exo')
+    implementation project(':ijkplayer-armv7a')
+    implementation project(':ijkplayer-arm64')
+    implementation project(':ijkplayer-armv5')
+    implementation project(':ijkplayer-x86')
+    implementation project(':ijkplayer-x86_64')
 }
