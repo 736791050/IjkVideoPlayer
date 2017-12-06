@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean mBackPressed;
     private RecyclerView video_list;
     private LayoutInflater layoutInflater;
+    private boolean fullScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,13 @@ public class MainActivity extends AppCompatActivity {
         bt_confirm = (Button) findViewById(R.id.bt_confirm);
         bt_full_screen = (Button) findViewById(R.id.bt_full_screen);
         mVideoView = findViewById(R.id.video_view);
+        mVideoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        mVideoView.setBackgroundColor(Color.BLACK);
 
         bt_full_screen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,8 +142,42 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        mBackPressed = true;
+        if(fullScreen){
+            exitFullScreen();
+        }else {
+            super.onBackPressed();
+            mBackPressed = true;
+        }
+    }
+
+    ViewGroup preParent;
+    private void exitFullScreen() {
+        ViewGroup parent = (ViewGroup) mVideoView.getParent();
+        if(parent != null){
+            parent.removeView(mVideoView);
+        }
+        if(preParent != null){
+            preParent.addView(mVideoView);
+        }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        fullScreen = false;
+    }
+
+    private void showFullScreen() {
+        if(fullScreen)return;
+        ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+        FrameLayout fr = decorView.findViewById(android.R.id.content);
+        if(fr != null){
+            ViewGroup parent = (ViewGroup) mVideoView.getParent();
+            if(parent != null){
+                parent.removeView(mVideoView);
+                preParent = parent;
+            }
+            fr.addView(mVideoView);
+//            TransitionManager.beginDelayedTransition(fr);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            fullScreen = true;
+        }
     }
 
     @Override
@@ -193,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 if(newState == RecyclerView.SCROLL_STATE_IDLE){
                     int pos = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
                     if(pos >= 0){
-                        View view = ((LinearLayoutManager)recyclerView.getLayoutManager()).findViewByPosition(pos);
+                        final View view = ((LinearLayoutManager)recyclerView.getLayoutManager()).findViewByPosition(pos);
                         if(view != null) {
                             int top = view.getTop();
                             int height = view.getHeight();
@@ -202,8 +244,14 @@ public class MainActivity extends AppCompatActivity {
                                 pos = pos + 1;
                             }
                             RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForLayoutPosition(pos);
-                            if (prePos != pos && viewHolder != null && viewHolder instanceof VideoHolder) {
+                            if (prePos != pos && viewHolder != null && viewHolder instanceof VideoHolder && !fullScreen) {
                                 ((VideoHolder) viewHolder).playVideo(pos);
+                                view.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showFullScreen();
+                                    }
+                                }, 3000);
                             }
                             prePos = pos;
                         }
